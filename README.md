@@ -87,6 +87,7 @@ Type=simple
 WorkingDirectory=/opt/MTProxy
 ExecStart=/opt/MTProxy/mtproto-proxy -u nobody -p 8888 -H 443 -S <secret> -P <proxy tag> <other params>
 Restart=on-failure
+ExecReload=/bin/kill -s HUP \$MAINPID
 
 [Install]
 WantedBy=multi-user.target
