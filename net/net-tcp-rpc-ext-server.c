@@ -149,10 +149,15 @@ int tcp_rpcs_default_execute (connection_job_t c, int op, struct raw_message *ms
 
 static unsigned char ext_secret[16][16];
 static int ext_secret_cnt = 0;
+static int ext_rand_pad_only = 0;
 
 void tcp_rpcs_set_ext_secret (unsigned char secret[16]) {
   assert (ext_secret_cnt < 16);
   memcpy (ext_secret[ext_secret_cnt ++], secret, 16);
+}
+
+void tcp_rpcs_set_ext_rand_pad_only(int set) {
+  ext_rand_pad_only = set;
 }
 
 static int allow_only_tls;
@@ -1309,7 +1314,7 @@ int tcp_rpcs_compact_parse_execute (connection_job_t C) {
         evp_crypt (T->read_aeskey, random_header, random_header, 64);
         unsigned tag = *(unsigned *)(random_header + 56);
 
-        if (tag == 0xdddddddd || tag == 0xeeeeeeee || tag == 0xefefefef) {
+        if (tag == 0xdddddddd || ((tag == 0xeeeeeeee || tag == 0xefefefef) && !ext_rand_pad_only)) {
           if (tag != 0xdddddddd && allow_only_tls) {
             vkprintf (1, "Expected random padding mode\n");
             RETURN_TLS_ERROR(default_domain_info);
